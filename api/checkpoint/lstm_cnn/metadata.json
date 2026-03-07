@@ -1,5 +1,6 @@
 {
   "architecture": "lstm_cnn",
+  "architecture_kind": "single_input",
   "lookback": 20,
   "horizon": 1,
   "feature_count": 21,
@@ -26,9 +27,35 @@
     "Pyrgeo",
     "RadSum"
   ],
+  "climate_features": [
+    "CO2air",
+    "Cum_irr",
+    "Tair",
+    "Tot_PAR",
+    "Ventwind",
+    "AssimLight",
+    "VentLee",
+    "HumDef",
+    "co2_dos",
+    "PipeGrow",
+    "EnScr",
+    "BlackScr"
+  ],
+  "weather_features": [
+    "Windsp",
+    "Winddir",
+    "Tout",
+    "Rhout",
+    "AbsHumOut",
+    "PARout",
+    "Iglob",
+    "Pyrgeo",
+    "RadSum"
+  ],
   "metrics": {
-    "mae": 46.3450813293457,
-    "rmse": 143.725031799005,
-    "r2": -9.855530607189741e+22
+    "mae": 18.603656768798828,
+    "rmse": 37.66172807663968,
+    "mape": 13.804692268371582,
+    "r2": 0.7544730305671692
   }
 }

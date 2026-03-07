@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from .constants import CLIMATE_COLUMNS, FEATURE_COLUMNS, WEATHER_COLUMNS
+from .constants import CLIMATE_COLUMNS, FEATURE_COLUMNS, WEATHER_COLUMNS, TARGET_COLUMNS
 
 
 @dataclass
@@ -80,7 +80,8 @@ def create_sequences(frame: pd.DataFrame, lookback: int, horizon: int) -> tuple[
         end = start + lookback
         target_idx = end + horizon - 1
         x_values.append(data[start:end, :])
-        y_values.append(data[target_idx, :])
+        target_indices = [FEATURE_COLUMNS.index(col) for col in TARGET_COLUMNS]
+        y_values.append(data[target_idx, target_indices])
 
     return np.stack(x_values), np.stack(y_values)
 

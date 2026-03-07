@@ -1,23 +1,105 @@
 {
-  "best_architecture": "bi_lstm",
+  "best_architecture": "multi_input_hybrid",
   "results": [
     {
-      "architecture": "lstm_cnn",
-      "model_dir": "/Users/nickcecchin/Desktop/ai_model/api/checkpoint/lstm_cnn",
+      "architecture": "baseline_lstm",
+      "architecture_kind": "single_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/baseline_lstm",
       "metrics": {
-        "mae": 46.3450813293457,
-        "rmse": 143.725031799005,
-        "r2": -9.855530607189741e+22
+        "mae": 11.74962329864502,
+        "rmse": 24.568615799922853,
+        "mape": 6.284961700439453,
+        "r2": 0.9242612719535828
+      }
+    },
+    {
+      "architecture": "lstm_cnn",
+      "architecture_kind": "single_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/lstm_cnn",
+      "metrics": {
+        "mae": 18.603656768798828,
+        "rmse": 37.66172807663968,
+        "mape": 13.804692268371582,
+        "r2": 0.7544730305671692
       }
     },
     {
       "architecture": "bi_lstm",
-      "model_dir": "/Users/nickcecchin/Desktop/ai_model/api/checkpoint/bi_lstm",
+      "architecture_kind": "single_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/bi_lstm",
       "metrics": {
-        "mae": 33.004634857177734,
-        "rmse": 109.32894566113313,
-        "r2": -1.0883442769599907e+22
+        "mae": 16.487794876098633,
+        "rmse": 35.33973300006135,
+        "mape": 9.908491134643555,
+        "r2": 0.8472526669502258
+      }
+    },
+    {
+      "architecture": "multi_input_hybrid",
+      "architecture_kind": "multi_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/multi_input_hybrid",
+      "metrics": {
+        "mae": 10.167006492614746,
+        "rmse": 21.515493798392633,
+        "mape": 4.973459243774414,
+        "r2": 0.9441661238670349
       }
     }
-  ]
+  ],
+  "comparison": {
+    "ranking_by_rmse": [
+      {
+        "rank": 1,
+        "architecture": "multi_input_hybrid",
+        "rmse": 21.515493798392633,
+        "mape": 4.973459243774414
+      },
+      {
+        "rank": 2,
+        "architecture": "baseline_lstm",
+        "rmse": 24.568615799922853,
+        "mape": 6.284961700439453
+      },
+      {
+        "rank": 3,
+        "architecture": "bi_lstm",
+        "rmse": 35.33973300006135,
+        "mape": 9.908491134643555
+      },
+      {
+        "rank": 4,
+        "architecture": "lstm_cnn",
+        "rmse": 37.66172807663968,
+        "mape": 13.804692268371582
+      }
+    ],
+    "baseline": {
+      "architecture": "baseline_lstm",
+      "architecture_kind": "single_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/baseline_lstm",
+      "metrics": {
+        "mae": 11.74962329864502,
+        "rmse": 24.568615799922853,
+        "mape": 6.284961700439453,
+        "r2": 0.9242612719535828
+      }
+    },
+    "best_enhanced": {
+      "architecture": "multi_input_hybrid",
+      "architecture_kind": "multi_input",
+      "model_dir": "/Users/chrisbolton/Desktop/School/uni/Y4/W26/4990/ai_model/api/checkpoint/multi_input_hybrid",
+      "metrics": {
+        "mae": 10.167006492614746,
+        "rmse": 21.515493798392633,
+        "mape": 4.973459243774414,
+        "r2": 0.9441661238670349
+      }
+    },
+    "improvement_vs_baseline": {
+      "rmse_delta": -3.0531220015302196,
+      "rmse_pct": 12.426919067779988,
+      "mape_delta": -1.311502456665039,
+      "mape_pct": 20.867310242691488
+    }
+  }
 }

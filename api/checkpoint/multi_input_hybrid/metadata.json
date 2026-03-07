@@ -1,0 +1,61 @@
+{
+  "architecture": "multi_input_hybrid",
+  "architecture_kind": "multi_input",
+  "lookback": 20,
+  "horizon": 1,
+  "feature_count": 21,
+  "features": [
+    "CO2air",
+    "Cum_irr",
+    "Tair",
+    "Tot_PAR",
+    "Ventwind",
+    "AssimLight",
+    "VentLee",
+    "HumDef",
+    "co2_dos",
+    "PipeGrow",
+    "EnScr",
+    "BlackScr",
+    "Windsp",
+    "Winddir",
+    "Tout",
+    "Rhout",
+    "AbsHumOut",
+    "PARout",
+    "Iglob",
+    "Pyrgeo",
+    "RadSum"
+  ],
+  "climate_features": [
+    "CO2air",
+    "Cum_irr",
+    "Tair",
+    "Tot_PAR",
+    "Ventwind",
+    "AssimLight",
+    "VentLee",
+    "HumDef",
+    "co2_dos",
+    "PipeGrow",
+    "EnScr",
+    "BlackScr"
+  ],
+  "weather_features": [
+    "Windsp",
+    "Winddir",
+    "Tout",
+    "Rhout",
+    "AbsHumOut",
+    "PARout",
+    "Iglob",
+    "Pyrgeo",
+    "RadSum"
+  ],
+  "metrics": {
+    "mae": 10.167006492614746,
+    "rmse": 21.515493798392633,
+    "mape": 4.973459243774414,
+    "r2": 0.9441661238670349
+  }
+}

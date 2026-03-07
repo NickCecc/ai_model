@@ -223,6 +223,7 @@
       <button class="tab-btn active" data-tab-target="predictTab">Predict</button>
       <button class="tab-btn" data-tab-target="mpcTab">MPC Control</button>
       <button class="tab-btn" data-tab-target="explainTab">Explainability</button>
+      <button class="tab-btn" data-tab-target="performanceTab">Model Performance</button>
       <button class="tab-btn" data-tab-target="codeTab">Code Runner</button>
     </div>
 
@@ -276,9 +277,8 @@
         </div>
         <textarea id="payload" spellcheck="false" aria-label="JSON payload"></textarea>
         <div class="actions">
-          <button type="button" id="sampleBtn">Load sample</button>
-          <button type="button" class="secondary" id="pipelineFromSampleBtn">Build pipeline sample</button>
-          <button type="button" class="secondary" id="clearBtn">Clear</button>
+          <button type="button" id="sampleBtn">Load test window</button>          
+          <button type="button" class="secondary" id="pipelineFromSampleBtn">Use loaded dataset window</button>          <button type="button" class="secondary" id="clearBtn">Clear</button>
         </div>
       </div>
 
@@ -411,51 +411,110 @@
     </div>
 
     <div id="explainTab" class="tab-panel">
-    <div class="card" style="margin-top:8px;">
-      <h3>4) Visualization & Explainability</h3>
-      <p>Visualize sensor trends and inspect model interpretability with attention heatmaps or SHAP-like attributions.</p>
-      <div class="grid">
-        <div>
-          <div class="field">
-            <label for="vizFeatures">Trend features (comma separated)</label>
-            <input id="vizFeatures" type="text" value="Air Temperature, Air Carbon Dioxide, Humidity Deficit, Assimilation Lighting Level, Wind-Side Vent Position, Outdoor Temperature, Global Irradiance" />
+      <div class="card" style="margin-top:8px;">
+        <h3>4) Visualization & Explainability</h3>
+        <p>Visualize sensor trends and inspect model interpretability with attention heatmaps or SHAP-like attributions.</p>
+        <div class="grid">
+          <div>
+            <div class="field">
+              <label for="vizFeatures">Trend features (comma separated)</label>
+              <input id="vizFeatures" type="text" value="Air Temperature, Air Carbon Dioxide, Humidity Deficit, Assimilation Lighting Level, Wind-Side Vent Position, Outdoor Temperature, Global Irradiance" />
+            </div>
+
+            <div class="actions">
+              <button type="button" id="renderTrendBtn" class="secondary">Render trends</button>
+              <button type="button" id="resetTrendZoomBtn" class="secondary">Reset axis</button>
+            </div>
+
+            <canvas id="trendCanvas" height="240"></canvas>
+            <div class="mini-grid" id="trendStats" style="margin-top:10px;"></div>
           </div>
-          <div class="actions">
-            <button type="button" id="renderTrendBtn" class="secondary">Render trends</button>
+
+          <div>
+            <div class="field">
+              <label for="explainMethod">Explainability method</label>
+              <select id="explainMethod">
+                <option value="gradient_attention">Attention Heatmap (Gradient)</option>
+                <option value="shap_approx">SHAP-like (Perturbation)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="explainTargetFeature">Target feature</label>
+              <select id="explainTargetFeature"></select>
+            </div>
+            <div class="field">
+              <label for="explainTopK">Top features to show</label>
+              <input id="explainTopK" type="number" min="1" max="21" value="8" />
+            </div>
+            <div class="actions">
+              <button type="button" id="runExplainBtn">Run explainability</button>
+            </div>
+            <div id="explainStatus" class="status">Idle</div>
+            <canvas id="heatmapCanvas" height="240" style="margin-top:10px;"></canvas>
+            <pre id="explainSummary" style="margin-top:10px;">No explainability run yet.</pre>
           </div>
-          <canvas id="trendCanvas" height="240"></canvas>
-          <div class="mini-grid" id="trendStats" style="margin-top:10px;"></div>
-        </div>
-        <div>
-          <div class="field">
-            <label for="explainMethod">Explainability method</label>
-            <select id="explainMethod">
-              <option value="gradient_attention">Attention Heatmap (Gradient)</option>
-              <option value="shap_approx">SHAP-like (Perturbation)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="explainTargetFeature">Target feature</label>
-            <select id="explainTargetFeature"></select>
-          </div>
-          <div class="field">
-            <label for="explainTopK">Top features to show</label>
-            <input id="explainTopK" type="number" min="1" max="21" value="8" />
-          </div>
-          <div class="actions">
-            <button type="button" id="runExplainBtn">Run explainability</button>
-          </div>
-          <div id="explainStatus" class="status">Idle</div>
-          <canvas id="heatmapCanvas" height="240" style="margin-top:10px;"></canvas>
-          <pre id="explainSummary" style="margin-top:10px;">No explainability run yet.</pre>
         </div>
       </div>
     </div>
+
+
+    <div id="performanceTab" class="tab-panel">
+      <div class="card" style="margin-top:8px;">
+        <h3>5) Model Performance</h3>
+        <p>Displays the current deployed model and architecture comparison from the latest training run.</p>
+
+        <div class="mini-grid" style="margin-bottom:14px;">
+          <div class="metric">
+            <div class="label">Best Model</div>
+            <div class="value" id="perfBestModel">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">RMSE</div>
+            <div class="value" id="perfRmse">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">MAE</div>
+            <div class="value" id="perfMae">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">MAPE</div>
+            <div class="value" id="perfMape">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">R²</div>
+            <div class="value" id="perfR2">-</div>
+          </div>
+          <div class="metric">
+            <div class="label">Lookback</div>
+            <div class="value" id="perfLookback">-</div>
+          </div>
+        </div>
+
+        <h3>Architecture Ranking</h3>
+        <pre id="perfSummary">Loading model performance...</pre>
+
+        <div style="overflow-x:auto; margin-top:10px;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">Rank</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">Architecture</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">RMSE</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">MAE</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">MAPE</th>
+                <th style="text-align:left; padding:8px; border-bottom:1px solid rgba(148,163,184,0.3);">R²</th>
+              </tr>
+            </thead>
+            <tbody id="perfTableBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
+
 
     <div id="codeTab" class="tab-panel">
     <div class="card" style="margin-top:8px;">
-      <h3>5) Run Python Code From Browser</h3>
+      <h3>6) Run Python Code From Browser</h3>
       <p>Select any project <code>.py</code> file, review it, then run it on the server.</p>
       <div class="grid">
         <div>
@@ -571,16 +630,33 @@
     const explainStatusEl = document.getElementById("explainStatus");
     const heatmapCanvasEl = document.getElementById("heatmapCanvas");
     const explainSummaryEl = document.getElementById("explainSummary");
+    const perfBestModelEl = document.getElementById("perfBestModel");
+    const perfRmseEl = document.getElementById("perfRmse");
+    const perfMaeEl = document.getElementById("perfMae");
+    const perfMapeEl = document.getElementById("perfMape");
+    const perfR2El = document.getElementById("perfR2");
+    const perfLookbackEl = document.getElementById("perfLookback");
+    const perfSummaryEl = document.getElementById("perfSummary");
+    const perfTableBodyEl = document.getElementById("perfTableBody");
     const tabButtons = Array.from(document.querySelectorAll(".tab-btn"));
     const tabPanels = Array.from(document.querySelectorAll(".tab-panel"));
     document.getElementById("sampleBtn").onclick = async () => {
-      setStatus("Loading sample...");
+      setStatus("Loading real dataset window...");
       try {
-        const res = await fetch("/sample");
-        if (!res.ok) throw new Error("Could not load sample");
+        const res = await fetch("/dataset-window?split=test&index=0");
+        if (!res.ok) throw new Error("Could not load dataset window");
         const data = await res.json();
-        payloadEl.value = JSON.stringify(data, null, 2);
-        setStatus("Sample loaded");
+
+        payloadEl.value = JSON.stringify({ data: data.data }, null, 2);
+        predictMergedRowsEl.value = JSON.stringify(data.merged_rows, null, 2);
+        mpcMergedRowsEl.value = JSON.stringify(data.merged_rows, null, 2);
+
+        predictGreenhouseRowsEl.value = "[]";
+        predictWeatherRowsEl.value = "[]";
+        mpcGreenhouseRowsEl.value = "[]";
+        mpcWeatherRowsEl.value = "[]";
+
+        setStatus(`Loaded ${data.split} dataset window`);
       } catch (err) {
         setError(err.message);
       }
@@ -611,6 +687,7 @@
       }
 
       let requestBody;
+      let trendFocusFeature = null;
       try {
         requestBody = {
           data: basePayload.data,
@@ -908,53 +985,144 @@
       ctx.fillRect(0, 0, w, h);
 
       const palette = ["#38bdf8", "#22c55e", "#f97316", "#eab308", "#a78bfa", "#fb7185", "#2dd4bf"];
-      const padding = 24;
-      const plotW = w - padding * 2;
-      const plotH = h - padding * 2;
+      const paddingLeft = 52;
+      const paddingRight = 20;
+      const paddingTop = 18;
+      const paddingBottom = 28;
+      const plotW = w - paddingLeft - paddingRight;
+      const plotH = h - paddingTop - paddingBottom;
       const n = data.length;
 
-      let globalMin = Infinity;
-      let globalMax = -Infinity;
       const seriesMap = {};
       selectedFeatures.forEach((feature) => {
         const idx = schema.indexOf(feature);
-        const series = data.map((row) => Number(row[idx]));
-        seriesMap[feature] = series;
+        seriesMap[feature] = data.map((row) => {
+          const value = Number(row[idx]);
+          return Math.abs(value) < 1e-5 ? 0 : value;
+        });
+      });
+
+      let globalMin = Infinity;
+      let globalMax = -Infinity;
+
+      selectedFeatures.forEach((feature) => {
+        const series = seriesMap[feature];
         series.forEach((v) => {
           globalMin = Math.min(globalMin, v);
           globalMax = Math.max(globalMax, v);
         });
       });
+
       if (!Number.isFinite(globalMin) || !Number.isFinite(globalMax) || globalMax === globalMin) {
         globalMin = 0;
         globalMax = 1;
       }
 
+      let axisMin = globalMin;
+      let axisMax = globalMax;
+
+      if (trendFocusFeature && seriesMap[trendFocusFeature]) {
+        const focusSeries = seriesMap[trendFocusFeature];
+        let localMin = Math.min(...focusSeries);
+        let localMax = Math.max(...focusSeries);
+
+        const range = Math.max(localMax - localMin, 1e-6);
+        const padding = Math.max(range * 0.35, Math.abs(localMax) * 0.05, 0.25);
+
+        axisMin = localMin - padding;
+        axisMax = localMax + padding;
+
+        if (axisMax <= axisMin) {
+          axisMax = axisMin + 1;
+        }
+      }
+
       ctx.strokeStyle = "rgba(148,163,184,0.25)";
-      ctx.strokeRect(padding, padding, plotW, plotH);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(paddingLeft, paddingTop, plotW, plotH);
+
+      const tickCount = 5;
+      ctx.font = "11px Segoe UI";
+      ctx.fillStyle = "#94a3b8";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i < tickCount; i++) {
+        const ratio = i / (tickCount - 1);
+        const y = paddingTop + ratio * plotH;
+        const value = axisMax - ratio * (axisMax - axisMin);
+
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(paddingLeft + plotW, y);
+        ctx.strokeStyle = "rgba(148,163,184,0.12)";
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText(value.toFixed(2), paddingLeft - 8, y);
+      }
 
       selectedFeatures.forEach((feature, idx) => {
         const series = seriesMap[feature];
+        const isFocused = trendFocusFeature === feature;
+
         ctx.beginPath();
         ctx.strokeStyle = palette[idx % palette.length];
-        ctx.lineWidth = 2;
+        ctx.lineWidth = isFocused ? 3 : 2;
+        ctx.globalAlpha = trendFocusFeature && !isFocused ? 0.35 : 1.0;
+
         series.forEach((v, i) => {
-          const x = padding + (i / Math.max(n - 1, 1)) * plotW;
-          const y = padding + (1 - (v - globalMin) / Math.max(globalMax - globalMin, 1e-6)) * plotH;
+          const x = paddingLeft + (i / Math.max(n - 1, 1)) * plotW;
+          const y = paddingTop + (1 - (v - axisMin) / Math.max(axisMax - axisMin, 1e-6)) * plotH;
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         });
+
         ctx.stroke();
+        ctx.globalAlpha = 1.0;
       });
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "11px Segoe UI";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText(
+        trendFocusFeature
+          ? `Focused axis: ${friendlyFeatureName(trendFocusFeature)}`
+          : "Shared y-axis",
+        paddingLeft,
+        h - 8
+      );
 
       trendStatsEl.innerHTML = "";
       selectedFeatures.forEach((feature, idx) => {
-        const series = seriesMap[feature];
-        const latest = series[series.length - 1];
-        const delta = latest - series[0];
-        const card = document.createElement("div");
+        const rawSeries = seriesMap[feature];
+        const latest = rawSeries[rawSeries.length - 1];
+        const delta = latest - rawSeries[0];
+        const isFocused = trendFocusFeature === feature;
+
+        const card = document.createElement("button");
+        card.type = "button";
         card.className = "metric";
-        card.innerHTML = `<div class="label">${friendlyFeatureName(feature)}</div><div class="value" style="color:${palette[idx % palette.length]}">${latest.toFixed(2)}</div><div class="label">Change ${delta.toFixed(2)}</div>`;
+        card.style.cursor = "pointer";
+        card.style.textAlign = "left";
+        card.style.background = isFocused
+          ? "rgba(56, 189, 248, 0.14)"
+          : "rgba(11, 18, 34, 0.55)";
+        card.style.border = isFocused
+          ? "1px solid rgba(56, 189, 248, 0.55)"
+          : "1px solid rgba(148, 163, 184, 0.25)";
+        card.innerHTML = `
+          <div class="label">${friendlyFeatureName(feature)}</div>
+          <div class="value" style="color:${palette[idx % palette.length]}">${latest.toFixed(2)}</div>
+          <div class="label">Change ${delta.toFixed(2)}</div>
+        `;
+
+        card.onclick = () => {
+          trendFocusFeature = feature;
+          renderTrendChart();
+        };
+
         trendStatsEl.appendChild(card);
       });
     }
@@ -1271,6 +1439,69 @@
       }
     }
 
+    async function loadModelPerformance() {
+    try {
+      const [infoRes, comparisonRes] = await Promise.all([
+        fetch("/model-info"),
+        fetch("/model/comparison")
+      ]);
+
+      const info = await infoRes.json();
+      const comparisonPayload = await comparisonRes.json();
+
+      if (!infoRes.ok) {
+        throw new Error(info.detail || "Failed to load model info");
+      }
+      if (!comparisonRes.ok) {
+        throw new Error(comparisonPayload.detail || "Failed to load model comparison");
+      }
+
+      const comparison = comparisonPayload.comparison || comparisonPayload;
+      const results = comparisonPayload.results || [];
+
+      const metrics = info.metrics || {};
+      perfBestModelEl.textContent = info.architecture || "-";
+      perfRmseEl.textContent = metrics.rmse != null ? Number(metrics.rmse).toFixed(2) : "-";
+      perfMaeEl.textContent = metrics.mae != null ? Number(metrics.mae).toFixed(2) : "-";
+      perfMapeEl.textContent = metrics.mape != null ? `${Number(metrics.mape).toFixed(2)}%` : "-";
+      perfR2El.textContent = metrics.r2 != null ? Number(metrics.r2).toFixed(3) : "-";
+      perfLookbackEl.textContent = info.lookback != null ? String(info.lookback) : "-";
+
+      const bestEnhanced = comparison.best_enhanced?.architecture || "-";
+      const rmseImprovement = comparison.improvement_vs_baseline?.rmse_pct;
+      const mapeImprovement = comparison.improvement_vs_baseline?.mape_pct;
+
+      perfSummaryEl.textContent =
+        `Best deployed model: ${info.architecture || "-"}\n` +
+        `Best enhanced architecture: ${bestEnhanced}\n` +
+        `RMSE improvement vs baseline: ${rmseImprovement != null ? Number(rmseImprovement).toFixed(2) + "%" : "-"}\n` +
+        `MAPE improvement vs baseline: ${mapeImprovement != null ? Number(mapeImprovement).toFixed(2) + "%" : "-"}`;
+
+      perfTableBodyEl.innerHTML = "";
+
+      const ranking = comparison.ranking_by_rmse || [];
+      ranking.forEach((row) => {
+        const matchingResult = results.find(r => r.architecture === row.architecture);
+        const mae = matchingResult?.metrics?.mae != null ? Number(matchingResult.metrics.mae).toFixed(2) : "-";
+        const r2 = matchingResult?.metrics?.r2 != null ? Number(matchingResult.metrics.r2).toFixed(3) : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${row.rank}</td>
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${row.architecture}</td>
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${Number(row.rmse).toFixed(2)}</td>
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${mae}</td>
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${Number(row.mape).toFixed(2)}%</td>
+          <td style="padding:8px; border-bottom:1px solid rgba(148,163,184,0.2);">${r2}</td>
+        `;
+        perfTableBodyEl.appendChild(tr);
+      });
+    } catch (err) {
+      perfSummaryEl.textContent = `Failed to load model performance: ${err.message}`;
+  }
+}
+
+
     function activateTab(tabId) {
       tabButtons.forEach((btn) => {
         btn.classList.toggle("active", btn.dataset.tabTarget === tabId);
@@ -1289,6 +1520,13 @@
     document.getElementById("mpcRunBtn").onclick = runMpcSimulation;
     document.getElementById("mpcScenarioBtn").onclick = runMpcScenarioBenchmark;
     document.getElementById("renderTrendBtn").onclick = renderTrendChart;
+    document.getElementById("resetTrendZoomBtn").onclick = () => {
+      trendFocusFeature = null;
+      renderTrendChart();
+    };
+
+    document.getElementById("runExplainBtn").onclick = runExplainability;
+    pipelineFromSampleBtn.onclick = buildPipelineSampleFromCurrentPayload;
     document.getElementById("runExplainBtn").onclick = runExplainability;
     pipelineFromSampleBtn.onclick = buildPipelineSampleFromCurrentPayload;
     usePipelinePredictEl.onchange = setPipelinePanelVisibility;
@@ -1301,6 +1539,7 @@
     // Auto-load sample on first visit to reduce confusion.
     loadPipelineDefaults();
     refreshModelInfo();
+    loadModelPerformance();
     loadMpcDefaults();
     loadExplainDefaults();
     document.getElementById("sampleBtn").click();

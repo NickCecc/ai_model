@@ -141,35 +141,62 @@ def _predict_next_row(
     action: dict[str, float],
     weather: dict[str, float],
     feature_names: list[str],
+    target_feature_names: list[str],
     feature_scaler,
     target_scaler,
     model,
     predict_fn=None,
 ) -> np.ndarray:
+    """
+    Predict the next full feature row.
+
+    The trained forecasting model may only predict a subset of features
+    (e.g. Tair, CO2air, HumDef). MPC still needs a full 21-feature state to
+    continue simulation, so we:
+      1. start from the last known row,
+      2. overwrite predicted target features,
+      3. enforce commanded controls and supplied weather values.
+    """
     index = _feature_index(feature_names)
     work_window = history_window.copy().astype(np.float64)
 
-    # Apply action to current time so the model conditions on commanded control.
+    # Apply the commanded controls to the most recent row so the model
+    # conditions on the chosen actuator settings.
     for var, value in action.items():
-        work_window[-1, index[var]] = float(value)
+        if var in index:
+            work_window[-1, index[var]] = float(value)
 
     if weather:
         _apply_weather_override(work_window[-1], weather, index)
 
     scaled = feature_scaler.transform(work_window)
+
     if predict_fn is None:
-        prediction_scaled = model.predict(scaled.reshape(1, scaled.shape[0], scaled.shape[1]), verbose=0)
+        prediction_scaled = model.predict(
+            scaled.reshape(1, scaled.shape[0], scaled.shape[1]),
+            verbose=0,
+        )
     else:
         prediction_scaled = predict_fn(scaled)
-    prediction = target_scaler.inverse_transform(prediction_scaled)[0].astype(np.float64)
 
-    # Enforce commanded control/exogenous values in the resulting next state.
+    predicted_targets = target_scaler.inverse_transform(prediction_scaled)[0].astype(np.float64)
+
+    # Build a full next-state row starting from the previous row.
+    next_row = work_window[-1].copy()
+
+    # Overwrite only the model's predicted target features.
+    for feature_name, value in zip(target_feature_names, predicted_targets):
+        if feature_name in index:
+            next_row[index[feature_name]] = float(value)
+
+    # Enforce commanded controls and exogenous weather in the resulting next state.
     for var, value in action.items():
-        prediction[index[var]] = float(value)
+        if var in index:
+            next_row[index[var]] = float(value)
     if weather:
-        _apply_weather_override(prediction, weather, index)
+        _apply_weather_override(next_row, weather, index)
 
-    return np.nan_to_num(prediction, nan=0.0, posinf=1e6, neginf=-1e6)
+    return np.nan_to_num(next_row, nan=0.0, posinf=1e6, neginf=-1e6)
 
 
 def _compute_step_cost(
@@ -242,6 +269,7 @@ def _rollout_plan(
     action_plan: list[dict[str, float]],
     weather_horizon: list[dict[str, float]],
     feature_names: list[str],
+    target_feature_names: list[str],
     feature_scaler,
     target_scaler,
     model,
@@ -267,6 +295,7 @@ def _rollout_plan(
             action=clipped_action,
             weather=weather,
             feature_names=feature_names,
+            target_feature_names=target_feature_names,
             feature_scaler=feature_scaler,
             target_scaler=target_scaler,
             model=model,
@@ -298,6 +327,7 @@ def _optimize_action_plan(
     candidate_sequences: int,
     weather_horizon: list[dict[str, float]],
     feature_names: list[str],
+    target_feature_names: list[str],
     feature_scaler,
     target_scaler,
     model,
@@ -320,6 +350,7 @@ def _optimize_action_plan(
         action_plan=hold_plan,
         weather_horizon=weather_horizon,
         feature_names=feature_names,
+        target_feature_names=target_feature_names,
         feature_scaler=feature_scaler,
         target_scaler=target_scaler,
         model=model,
@@ -345,6 +376,7 @@ def _optimize_action_plan(
             action_plan=candidate_plan,
             weather_horizon=weather_horizon,
             feature_names=feature_names,
+            target_feature_names=target_feature_names,
             feature_scaler=feature_scaler,
             target_scaler=target_scaler,
             model=model,
@@ -388,6 +420,7 @@ def _compute_run_metrics(
         for f in tracked_features:
             if f in state:
                 state_series[f].append(float(state[f]))
+
     stability_vals = []
     for values in state_series.values():
         if len(values) >= 2:
@@ -405,6 +438,7 @@ def _compute_run_metrics(
 def run_mpc_feedback_loop(
     initial_history: np.ndarray,
     feature_names: list[str],
+    target_feature_names: list[str],
     model,
     feature_scaler,
     target_scaler,
@@ -431,6 +465,11 @@ def run_mpc_feedback_loop(
     control_variables = [var for var in DEFAULT_CONTROL_VARIABLES if var in index]
     if not control_variables:
         raise ValueError("No control variables found in the current feature schema")
+
+    # Keep only target names that actually exist in the current full feature schema.
+    resolved_target_feature_names = [name for name in target_feature_names if name in index]
+    if not resolved_target_feature_names:
+        raise ValueError("No target feature names match the current feature schema")
 
     bounds = infer_control_bounds(
         history_window=history,
@@ -473,6 +512,7 @@ def run_mpc_feedback_loop(
             candidate_sequences=candidate_sequences,
             weather_horizon=weather_horizon,
             feature_names=feature_names,
+            target_feature_names=resolved_target_feature_names,
             feature_scaler=feature_scaler,
             target_scaler=target_scaler,
             model=model,
@@ -492,6 +532,7 @@ def run_mpc_feedback_loop(
             action=applied_action,
             weather=next_weather,
             feature_names=feature_names,
+            target_feature_names=resolved_target_feature_names,
             feature_scaler=feature_scaler,
             target_scaler=target_scaler,
             model=model,
@@ -525,6 +566,7 @@ def run_mpc_feedback_loop(
         "horizon": horizon,
         "candidate_sequences": candidate_sequences,
         "control_variables": control_variables,
+        "target_feature_names": resolved_target_feature_names,
         "target_setpoints": resolved_setpoints,
         "target_weights": resolved_target_weights,
         "control_weights": resolved_control_weights,

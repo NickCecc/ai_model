@@ -48,3 +48,9 @@ WEATHER_COLUMNS = [
     "Pyrgeo",
     "RadSum",
 ]
+
+TARGET_COLUMNS = [
+    "Tair",
+    "CO2air",
+    "HumDef"
+]

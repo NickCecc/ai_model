@@ -13,6 +13,7 @@ import sys
 from typing import Any
 
 try:
+    from api.ml.data import create_sequences, load_feature_frame, split_scale_sequences
     from api.ml.constants import CLIMATE_COLUMNS, FEATURE_COLUMNS, WEATHER_COLUMNS
     from api.ml.pipeline import PipelineOptions, prepare_model_window
     from api.ml.continuous import run_incremental_update
@@ -25,6 +26,7 @@ try:
         run_mpc_feedback_loop,
     )
 except ModuleNotFoundError:
+    from ml.data import create_sequences, load_feature_frame, split_scale_sequences
     from ml.constants import CLIMATE_COLUMNS, FEATURE_COLUMNS, WEATHER_COLUMNS
     from ml.pipeline import PipelineOptions, prepare_model_window
     from ml.continuous import run_incremental_update
@@ -67,6 +69,8 @@ EXPECTED_FEATURES = list(model_metadata.get("features", FEATURE_COLUMNS))
 MODEL_INPUT_KIND = str(model_metadata.get("architecture_kind", "single_input"))
 CLIMATE_INDICES = [EXPECTED_FEATURES.index(c) for c in CLIMATE_COLUMNS if c in EXPECTED_FEATURES]
 WEATHER_INDICES = [EXPECTED_FEATURES.index(c) for c in WEATHER_COLUMNS if c in EXPECTED_FEATURES]
+TARGET_FEATURES = list(model_metadata.get("target_features", ["Tair", "CO2air", "HumDef"]))
+
 
 class InputData(BaseModel):
     data: list[list[float]] | None = None
@@ -153,21 +157,84 @@ def model_info():
         "architecture": model_metadata.get("architecture", "unknown"),
         "architecture_kind": MODEL_INPUT_KIND,
         "lookback": EXPECTED_LOOKBACK,
+        "horizon": model_metadata.get("horizon"),
         "feature_count": len(EXPECTED_FEATURES),
         "features": EXPECTED_FEATURES,
+        "climate_features": model_metadata.get("climate_features"),
+        "weather_features": model_metadata.get("weather_features"),
         "metrics": model_metadata.get("metrics"),
+    }
+
+
+@app.get("/dataset-window")
+def dataset_window(split: str = "test", index: int = 0):
+    climate_csv = PROJECT_ROOT / "greenhouse_code" / "GreenhouseClimate.csv"
+    weather_csv = PROJECT_ROOT / "greenhouse_code" / "Weather.csv"
+
+    if not climate_csv.exists() or not weather_csv.exists():
+        raise HTTPException(status_code=404, detail="Climate or weather CSV file not found")
+
+    frame = load_feature_frame(climate_csv=climate_csv, weather_csv=weather_csv)
+    x_values, y_values = create_sequences(
+        frame=frame,
+        lookback=EXPECTED_LOOKBACK,
+        horizon=int(model_metadata.get("horizon", 1)),
+    )
+
+    splits = split_scale_sequences(
+        x_values=x_values,
+        y_values=y_values,
+        train_ratio=0.7,
+        val_ratio=0.15,
+    )
+
+    split = split.lower().strip()
+    if split == "train":
+        x_source = splits.x_train
+    elif split == "val":
+        x_source = splits.x_val
+    elif split == "test":
+        x_source = splits.x_test
+    else:
+        raise HTTPException(status_code=400, detail="split must be one of: train, val, test")
+
+    if len(x_source) == 0:
+        raise HTTPException(status_code=404, detail=f"No rows available for split '{split}'")
+
+    if index < 0 or index >= len(x_source):
+        raise HTTPException(status_code=400, detail=f"index out of range for split '{split}'")
+
+    # convert scaled window back to raw/original values for dashboard use
+    raw_window = feature_scaler.inverse_transform(x_source[index])
+
+    merged_rows = []
+    for t, row in enumerate(raw_window):
+        row_dict = {"%time": f"{split}_{index}_{t}"}
+        for i, feature_name in enumerate(EXPECTED_FEATURES):
+            row_dict[feature_name] = float(row[i])
+        merged_rows.append(row_dict)
+
+    return {
+        "split": split,
+        "index": index,
+        "lookback": EXPECTED_LOOKBACK,
+        "feature_count": len(EXPECTED_FEATURES),
+        "merged_rows": merged_rows,
+        "data": raw_window.tolist(),
     }
 
 
 @app.get("/model/comparison")
 def model_comparison():
+    summary_path = checkpoint_dir / "training_summary.json"
     comparison_path = checkpoint_dir / "model_comparison.json"
-    training_summary_path = checkpoint_dir / "training_summary.json"
+
+    if summary_path.exists():
+        return json.loads(summary_path.read_text(encoding="utf-8"))
+
     if comparison_path.exists():
         return json.loads(comparison_path.read_text(encoding="utf-8"))
-    if training_summary_path.exists():
-        payload = json.loads(training_summary_path.read_text(encoding="utf-8"))
-        return payload.get("comparison", payload)
+
     raise HTTPException(status_code=404, detail="No model comparison found. Run train_hybrid_models.py first.")
 
 
@@ -221,9 +288,7 @@ def mpc_default_config():
     }
 
 
-def _prepare_window_from_payload(
-    payload: dict[str, Any],
-):
+def _prepare_window_from_payload(payload: dict[str, Any]):
     lookback = int(payload.get("lookback", EXPECTED_LOOKBACK))
     options = PipelineOptions(
         lookback=lookback,
@@ -404,12 +469,15 @@ def predict(input: InputData):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     prediction_scaled = _predict_scaled_window(scaled_window)
-
-    # Inverse-transform output
     prediction_original = target_scaler.inverse_transform(prediction_scaled)
 
+    target_names = TARGET_FEATURES
+    pred_values = prediction_original[0].tolist()
+
     return {
-        "prediction": prediction_original.tolist(),
+        "prediction": {
+            target_names[i]: pred_values[i] for i in range(min(len(target_names), len(pred_values)))
+        },
         "used_automated_pipeline": bool(input.use_automated_pipeline),
         "pipeline_metadata": pipeline_metadata,
     }
@@ -430,6 +498,7 @@ def mpc_simulate(input: MPCSimulationRequest):
         result = run_mpc_feedback_loop(
             initial_history=input_array,
             feature_names=EXPECTED_FEATURES,
+            target_feature_names=TARGET_FEATURES,
             model=model,
             feature_scaler=scaler_for_mpc,
             target_scaler=target_scaler,
@@ -456,6 +525,7 @@ def mpc_simulate(input: MPCSimulationRequest):
 def mpc_evaluate_scenarios(input: MPCScenarioEvaluationRequest):
     if not input.scenarios:
         raise HTTPException(status_code=400, detail="At least one scenario is required")
+
     try:
         input_array, _scaled_window, scaler_for_mpc, pipeline_metadata = _resolve_input_window(
             data=input.data,
@@ -471,6 +541,7 @@ def mpc_evaluate_scenarios(input: MPCScenarioEvaluationRequest):
             scenario_result = run_mpc_feedback_loop(
                 initial_history=input_array.copy(),
                 feature_names=EXPECTED_FEATURES,
+                target_feature_names=TARGET_FEATURES,
                 model=model,
                 feature_scaler=scaler_for_mpc,
                 target_scaler=target_scaler,
@@ -564,7 +635,11 @@ def explain(input: ExplainRequest):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    target_idx, resolved_target_feature = _target_feature_index(input.target_feature)
+    resolved_target_feature = input.target_feature if input.target_feature in TARGET_FEATURES else (TARGET_FEATURES[0] if TARGET_FEATURES else "Tair")
+    if resolved_target_feature not in TARGET_FEATURES:
+        raise HTTPException(status_code=400, detail="Target feature is not one of the trained prediction targets")
+
+    target_idx = TARGET_FEATURES.index(resolved_target_feature)
     method = input.method.strip().lower()
     lookback, feature_count = scaled_window.shape
 
@@ -590,8 +665,8 @@ def explain(input: ExplainRequest):
             raise HTTPException(status_code=500, detail="Could not compute gradients for explanation")
         grad_values = grads.numpy()[0].astype(np.float64)
         heatmap = np.abs(grad_values * scaled_window)
+
     elif method == "shap_approx":
-        # Perturbation-based SHAP-like attributions by replacing each point with baseline.
         baseline_row_raw = np.mean(raw_window, axis=0, dtype=np.float64)
         baseline_window_raw = np.tile(baseline_row_raw, (lookback, 1))
 
@@ -604,6 +679,7 @@ def explain(input: ExplainRequest):
                 pred_raw = target_scaler.inverse_transform(pred_scaled)[0]
                 heatmap[t, f] = base_target_value - float(pred_raw[target_idx])
         heatmap = np.abs(heatmap)
+
     else:
         raise HTTPException(
             status_code=400,
@@ -644,6 +720,7 @@ def explain(input: ExplainRequest):
         "method": method,
         "target_feature": resolved_target_feature,
         "target_prediction": base_target_value,
+        "target_features": TARGET_FEATURES,
         "features": EXPECTED_FEATURES,
         "raw_window": raw_window.tolist(),
         "heatmap": heatmap.tolist(),
@@ -662,5 +739,3 @@ def explain(input: ExplainRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
-
-
