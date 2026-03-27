@@ -1,60 +1,96 @@
 # Greenhouse AI Platform
 
-This API + web dashboard provides:
-- enhanced deep learning architectures (baseline, hybrid, multi-input)
-- automated data processing and optional dynamic scaling
+This API and dashboard provide:
+- greenhouse climate prediction
+- trained model comparison
 - MPC simulation and scenario benchmarking
-- trend visualization and explainability heatmaps
+- explainability heatmaps and feature importance
+- trend visualization
 - incremental continuous-learning updates
 
-## Quick Start
+## Run The App
+
+The main web dashboard is served directly by the FastAPI app.
+
+### 1. Create and activate a virtual environment
 ```bash
 cd /Users/nickcecchin/Desktop/ai_model
-source /Users/nickcecchin/Desktop/ai_model/api/.venv/bin/activate
-pip install -r /Users/nickcecchin/Desktop/ai_model/api/requirements.txt
+python3 -m venv api/.venv
+source api/.venv/bin/activate
+```
+
+### 2. Install dependencies
+```bash
+pip install -r api/requirements.txt
+```
+
+### 3. Start the API and dashboard
+```bash
 uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-Open: `http://127.0.0.1:8000`
 
-## Model Training (Baseline + Enhanced)
-Train and compare baseline vs enhanced models:
+### 4. Open the dashboard
+Open:
+
+`http://127.0.0.1:8000`
+
+This serves the main UI from `api/ui.html`.
+
+## If No Trained Checkpoint Exists
+
+The app expects a trained checkpoint in `api/checkpoint/`.
+
+If you do not have one yet, train the models first:
+
 ```bash
-python /Users/nickcecchin/Desktop/ai_model/api/train_hybrid_models.py --architecture all
+python api/train_hybrid_models.py --architecture all
+```
+
+## Model Training
+
+Train and compare the available architectures:
+
+```bash
+python api/train_hybrid_models.py --architecture all
 ```
 
 Supported architectures:
 - `baseline_lstm`
 - `lstm_cnn`
 - `bi_lstm`
-- `multi_input_hybrid` (separate greenhouse/weather branches)
+- `multi_input_hybrid`
 
-Outputs in `/Users/nickcecchin/Desktop/ai_model/api/checkpoint/`:
-- per-model folders (`baseline_lstm/`, `lstm_cnn/`, `bi_lstm/`, `multi_input_hybrid/`)
-- `model.keras`, `feature_scaler.save`, `target_scaler.save` (best promoted model)
+Outputs are written to `api/checkpoint/`, including:
+- per-model folders
+- promoted model weights and scalers
 - `model_metadata.json`
 - `training_summary.json`
-- `model_comparison.json`, `model_comparison.csv` (RMSE + MAPE comparison)
+- `model_comparison.json`
+- `model_comparison.csv`
 
 ## Benchmark Existing Checkpoints
+
 ```bash
-python /Users/nickcecchin/Desktop/ai_model/api/benchmark_models.py
+python api/benchmark_models.py
 ```
-Produces `benchmark_comparison.json` and `benchmark_comparison.csv`.
+
+This produces benchmark comparison outputs locally.
 
 ## Automated Data Processing
-Batch processing of `GreenhouseClimate.csv` + `Weather.csv`:
-```bash
-python /Users/nickcecchin/Desktop/ai_model/api/automated_data_pipeline.py
-```
-Produces cleaned merged features and summary stats in `checkpoint/`.
 
-## Continuous Learning (Incremental Update)
+```bash
+python api/automated_data_pipeline.py
+```
+
+This prepares merged greenhouse and weather features for modeling.
+
+## Continuous Learning
+
 API endpoint:
 - `POST /continuous/update`
 
-This ingests newly appended CSV rows, updates scalers incrementally, and fine-tunes the deployed model.
-
 Example request:
+
 ```json
 {
   "new_rows_limit": 4000,
@@ -69,58 +105,45 @@ Example request:
 ### Prediction
 - `POST /predict`
 
-Supports two modes:
-- direct mode: provide `data` (`lookback x feature_count`)
-- automated mode: `use_automated_pipeline=true` + `automated_pipeline` payload
+Supports:
+- direct mode with `data`
+- automated mode with `use_automated_pipeline=true`
 
 ### Pipeline
 - `GET /pipeline/default-config`
 - `POST /pipeline/prepare`
-
-Pipeline options:
-- `merge_strategy`: `inner|left|right|outer`
-- `fill_method`: `interpolate|ffill|bfill|zero`
-- `scaling_mode`: `trained|dynamic`
 
 ### MPC
 - `GET /mpc/default-config`
 - `POST /mpc/simulate`
 - `POST /mpc/evaluate-scenarios`
 
-`/mpc/simulate` returns:
-- `energy_efficiency_score`
-- `stability_index`
-- `objective_trace`
-- predicted states and applied control actions
-
-Scenario benchmarking endpoint ranks scenarios by efficiency/stability.
-
 ### Explainability
 - `GET /explain/default-config`
 - `POST /explain`
-
-Methods:
-- `gradient_attention` (attention-style gradient heatmap)
-- `shap_approx` (perturbation SHAP-like attribution)
 
 ### Model Metadata / Comparison
 - `GET /model-info`
 - `GET /model/comparison`
 
-## Visualization Dashboard
-The web UI includes tabs for:
+## Dashboard Sections
+
+The main UI includes:
+- Summary
 - Predict
+- Model Comparison
 - MPC Control
 - Explainability
-- Code Runner
+- Charts / Trends
+- Scripts / Developer Tools
+- Settings / Environment
 
-Features:
-- historical trend lines and feature cards
-- explainability heatmap + top contributors
-- MPC trajectories (controlled/predicted variables)
-- scenario benchmark output
+## Git And Generated Files
 
-## Deployment Notes
-- Use Python 3.13-compatible stack from `requirements.txt`.
-- Keep `checkpoint/model_metadata.json` aligned with deployed model.
-- For production deployment, run behind a process manager (e.g., systemd, supervisor, or container orchestration) and disable `--reload`.
+Generated training outputs should stay local. The repo-level `.gitignore` is set up to avoid pushing:
+- `api/checkpoint/`
+- `greenhouse_code/checkpoint/`
+- local virtual environments
+
+If generated files are already tracked in Git, they must be untracked separately before `.gitignore` will stop them from appearing in commits.
+

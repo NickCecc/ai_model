@@ -65,3 +65,79 @@ ai_model/
 │   ├── Weather.csv
 │   └── ...
 └── web-system/
+# Greenhouse AI / ML Project
+
+This project provides a FastAPI backend and browser dashboard for:
+- greenhouse climate prediction
+- model comparison
+- MPC simulation
+- explainability and heatmaps
+- trend visualization
+- developer tools and script execution
+
+## Run The Main App
+
+The main web dashboard is served directly by the FastAPI app. There is no separate frontend build step for the primary greenhouse UI.
+
+### 1. Create and activate a virtual environment
+```bash
+cd /Users/nickcecchin/Desktop/ai_model
+python3 -m venv api/.venv
+source api/.venv/bin/activate
+```
+
+### 2. Install dependencies
+```bash
+pip install -r api/requirements.txt
+```
+
+### 3. Start the API and dashboard
+```bash
+uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 4. Open the dashboard
+Open:
+
+`http://127.0.0.1:8000`
+
+That serves the main UI from `api/ui.html`.
+
+## If No Model Checkpoint Exists Yet
+
+The app expects a trained checkpoint in `api/checkpoint/`.
+
+If you do not have one yet, train the models first:
+
+```bash
+python api/train_hybrid_models.py --architecture all
+```
+
+This generates model weights, scalers, metadata, and comparison outputs locally.
+
+## Optional: Run The Older Static Web Folder
+
+There is also a `web-system/` folder, but it is not the main greenhouse dashboard.
+
+If you want to open it anyway:
+
+```bash
+cd /Users/nickcecchin/Desktop/ai_model/web-system
+python3 -m http.server 8080
+```
+
+Then open:
+
+`http://127.0.0.1:8080`
+
+## Training Artifacts And Git
+
+The repo-level `.gitignore` keeps generated files local by default, including:
+- `api/checkpoint/`
+- `greenhouse_code/checkpoint/`
+- local virtual environments
+
+Important:
+
+If checkpoint files are already tracked in Git, `.gitignore` alone will not stop them from appearing in future commits. They must be untracked separately with `git rm --cached`.
+

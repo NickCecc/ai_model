@@ -1,0 +1,19 @@
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environments
+.venv/
+api/.venv/
+
+# Generated training artifacts and promoted checkpoints
+api/checkpoint/
+greenhouse_code/checkpoint/
+
+# Generated benchmark outputs
+api/benchmark_comparison.json
+api/benchmark_comparison.csv
+

@@ -1175,9 +1175,9 @@
     <header class="masthead">
       <div>
         <div class="eyebrow">Greenhouse AI Platform</div>
-        <h1>One place to explain, compare, predict, and control.</h1>
+        <h1>Forecast greenhouse climate and test control decisions.</h1>
         <p>
-          This interface is organized for two jobs at once: a clean executive walkthrough for demos and a practical control surface for people actually running the modeling workflow.
+          This project combines greenhouse climate forecasting, model benchmarking, explainability, and MPC simulation. It predicts what happens next inside the greenhouse and helps evaluate which control strategy best meets climate targets.
         </p>
         <div class="masthead-actions">
           <button class="hero-button" type="button" data-jump-tab="summary">Open summary</button>
@@ -1188,8 +1188,8 @@
 
       <div class="masthead-aside">
         <section class="headline-card">
-          <h2>Executive snapshot</h2>
-          <p>The summary tab turns the system into a guided story: what it predicts, which model is deployed, why it matters, and what someone should look at first.</p>
+          <h2>Project snapshot</h2>
+          <p>This system predicts key greenhouse conditions from recent climate and weather history, compares multiple trained models, and simulates control actions before they are applied.</p>
           <div class="headline-metrics">
             <div class="headline-metric">
               <span>Best architecture</span>
@@ -1211,8 +1211,8 @@
         </section>
 
         <section class="headline-card">
-          <h3>Built for mixed audiences</h3>
-          <p>Demo viewers get a short narrative and clear takeaways. Technical users can drop into the deeper tabs without losing context.</p>
+          <h3>What you can inspect here</h3>
+          <p>You can see which model is deployed, how well competing models perform, what the next predicted greenhouse state looks like, which features influenced the forecast, and how MPC responds under different target settings.</p>
         </section>
       </div>
     </header>
@@ -1263,7 +1263,7 @@
           <div class="section-heading">
             <div>
               <h2>Summary</h2>
-              <p>The first screen answers the core questions immediately: what the project does, which models exist, which one performs best, what the outputs mean, and why the system is useful in practice.</p>
+              <p>This overview shows what the greenhouse AI system does, which models were trained, which model currently performs best, what the predicted outputs mean, and how the system supports forecasting and control.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Demo-ready</span>
@@ -1274,9 +1274,9 @@
 
           <div class="summary-grid">
             <div class="executive-card">
-              <h3 id="summaryHeadline">Greenhouse prediction and control in one product view.</h3>
+              <h3 id="summaryHeadline">This project predicts greenhouse climate and evaluates control strategy.</h3>
               <p id="summaryNarrative">
-                The platform forecasts climate behavior, compares multiple deep-learning models, surfaces explainability signals, and tests control strategies through MPC simulation. It is designed so someone can understand the project in under a minute, then drill into the operational tabs for real use.
+                The model takes a recent time window of greenhouse and outdoor conditions and predicts the next greenhouse state. Around that core forecast, the system compares alternative model architectures, shows feature importance and timestep influence, and runs model predictive control simulations to test how different control objectives affect performance.
               </p>
 
               <div class="executive-grid">
@@ -1304,24 +1304,24 @@
 
               <div class="callout-band">
                 <div class="lane demo">
-                  <h4>Best path for a demo</h4>
-                  <p>Start here, open Model Comparison to show why the deployed model won, then use Predict or MPC for a concrete example.</p>
+                  <h4>What the model predicts</h4>
+                  <p>The main prediction targets are greenhouse air temperature, CO2 concentration, and humidity deficit. These are the core outputs used for monitoring and control decisions.</p>
                 </div>
                 <div class="lane tech">
-                  <h4>Best path for technical users</h4>
-                  <p>Jump from Predict into Explainability, then inspect Scripts and Settings to see the pipeline assumptions and runtime tools.</p>
+                  <h4>What the rest of the system adds</h4>
+                  <p>Model comparison shows which architecture performs best, Explainability shows which inputs drove a forecast, and MPC simulates how control settings influence future greenhouse behavior.</p>
                 </div>
               </div>
             </div>
 
             <div class="summary-callout">
               <h3>What makes this useful</h3>
-              <p>This is not just a scoring dashboard. It helps answer operational questions: what will happen next, which model should we trust, which features drove the forecast, and which control strategy looks most efficient.</p>
+              <p>This system helps answer practical greenhouse questions: what conditions are likely next, which trained model is most reliable, what signals drove the forecast, and which control policy looks most effective before deployment.</p>
               <ul class="list" id="summaryUsefulnessList">
-                <li>Forecast target greenhouse conditions from recent climate and weather history.</li>
-                <li>Compare architectures using ranked metrics instead of vague model claims.</li>
-                <li>Simulate control actions before applying them in a live environment.</li>
-                <li>Expose explainability views for stakeholder trust and debugging.</li>
+                <li>Forecast target greenhouse conditions from recent sensor and weather history.</li>
+                <li>Compare trained architectures using ranked error metrics.</li>
+                <li>Simulate control actions before applying them to a real greenhouse setting.</li>
+                <li>Expose explainability views for trust, validation, and debugging.</li>
               </ul>
               <div class="subtle-divider"></div>
               <div class="quick-links">
@@ -1336,7 +1336,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Current model lineup</h3>
-                  <p>All trained architectures are visible in one place so someone can understand the modeling strategy without reading code or training logs.</p>
+                  <p>These are the trained model architectures evaluated on the greenhouse forecasting task. Lower error indicates more accurate next-step prediction.</p>
                 </div>
                 <span class="status-pill" id="summaryModelCount">Loading models</span>
               </div>
@@ -1347,7 +1347,7 @@
               <div class="panel-header">
                 <div>
                   <h3>How to read the outputs</h3>
-                  <p>The summary tab should remove ambiguity. Each output is translated into plain language so a non-technical viewer knows why the number matters.</p>
+                  <p>The prediction outputs below are written in operational terms so a first-time viewer can understand what each forecast represents in the greenhouse.</p>
                 </div>
               </div>
               <div class="feature-tags" id="summaryOutputTags"></div>
@@ -1412,10 +1412,10 @@
           <div class="section-heading">
             <div>
               <h2>Predict</h2>
-              <p>The prediction tab is structured around a simple demo path first, with advanced pipeline controls available on demand instead of overwhelming the default view.</p>
+              <p>Use this tab to send a greenhouse input window to the live prediction model and inspect the forecasted next-step greenhouse state.</p>
             </div>
             <div class="section-badges">
-              <span class="badge highlight">Best for live demos</span>
+              <span class="badge highlight">Live forecast</span>
               <span class="badge">Supports direct payload and pipeline modes</span>
             </div>
           </div>
@@ -1425,7 +1425,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Prepare input</h3>
-                  <p>Start with a sample request or a dataset window, then edit if needed. Direct mode is the cleanest way to demo the forecasting output.</p>
+                  <p>Load a sample request or a dataset window, then send it to the deployed model. Direct mode uses a prepared tensor window, while pipeline mode builds a window from structured greenhouse and weather rows.</p>
                 </div>
                 <div class="toggle-group" id="predictModeToggle">
                   <button class="chip-button active" type="button" data-mode="direct">Direct JSON</button>
@@ -1513,7 +1513,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Prediction output</h3>
-                  <p>The response is translated into decision-ready cards first, then the raw payload is shown below for technical inspection.</p>
+                  <p>The forecast is shown first as greenhouse target outputs, followed by the raw API response and metadata.</p>
                 </div>
               </div>
 
@@ -1536,7 +1536,7 @@
               </div>
 
               <div class="info-note" id="predictionMeaning">
-                These outputs represent the next predicted greenhouse state for the trained target variables. Use them as the starting point for control decisions, monitoring, or explainability review.
+                These values represent the model's next predicted greenhouse state for the trained target variables. They can be used as inputs to monitoring, explainability review, or control planning.
               </div>
 
               <div class="status-line" id="predictStatus">Idle</div>
@@ -1549,10 +1549,10 @@
           <div class="section-heading">
             <div>
               <h2>Model Comparison</h2>
-              <p>This tab makes the modeling story legible. It shows the ranked architectures, the deployed winner, and enough metric detail to defend the selection without dumping raw training artifacts on screen.</p>
+              <p>This section compares the trained forecasting architectures and shows which model currently performs best on the greenhouse prediction task.</p>
             </div>
             <div class="section-badges">
-              <span class="badge highlight">Clear for presentations</span>
+              <span class="badge highlight">Model ranking</span>
               <span class="badge">Backed by training summary files</span>
             </div>
           </div>
@@ -1562,7 +1562,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Architecture ranking</h3>
-                  <p>The best model should be obvious immediately. RMSE is shown as the primary ordering metric, with lower bars indicating stronger performance.</p>
+                  <p>Architectures are ranked by RMSE. Lower values indicate better prediction accuracy.</p>
                 </div>
               </div>
               <div class="bar-chart" id="comparisonBars"></div>
@@ -1572,7 +1572,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Winning model summary</h3>
-                  <p>Use this block when someone asks, “Which model actually ships, and why?”</p>
+                  <p>This block shows the currently deployed architecture and the aggregate metrics that explain why it was selected.</p>
                 </div>
               </div>
               <div class="mini-cards">
@@ -1590,7 +1590,7 @@
                 </div>
               </div>
               <div class="info-note" id="modelsSummaryNote">
-                The current best model reduces forecast error while keeping interpretability and multi-signal context available through the rest of the interface.
+                The deployed model is the strongest current performer among the trained candidates and supports the downstream explainability and control workflows shown in the rest of the dashboard.
               </div>
             </section>
           </div>
@@ -1599,7 +1599,7 @@
             <div class="panel-header">
               <div>
                 <h3>Detailed comparison table</h3>
-                <p>Metrics are shown in a compact table so technical viewers can verify performance without leaving the UI.</p>
+                <p>This table shows the comparison metrics used to rank the available model architectures.</p>
               </div>
             </div>
             <div class="table-wrap">
@@ -1625,7 +1625,7 @@
             <div class="panel-header">
               <div>
                 <h3>Per-target deployed metrics</h3>
-                <p>The main targets are surfaced individually so the model does not feel like an opaque aggregate score.</p>
+                <p>Per-target metrics show how the deployed model performs on each predicted greenhouse variable.</p>
               </div>
             </div>
             <div class="feature-tags" id="perTargetMetrics"></div>
@@ -1636,7 +1636,7 @@
           <div class="section-heading">
             <div>
               <h2>MPC Control</h2>
-              <p>The control tab focuses on practical simulation: load an initial window, run MPC, inspect efficiency and stability, then compare scenarios without overloading the screen with every possible knob at once.</p>
+              <p>This section runs model predictive control on top of the forecasting model. It simulates how different control objectives and actuator costs affect future greenhouse behavior.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Operational view</span>
@@ -1649,7 +1649,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Simulation setup</h3>
-                  <p>Use defaults for a clean demo, then open advanced inputs when you need deeper control.</p>
+                  <p>Set the control horizon, candidate sequences, targets, and penalties, then simulate the controller from an initial greenhouse history window.</p>
                 </div>
               </div>
 
@@ -1726,7 +1726,7 @@
               <div class="panel-header">
                 <div>
                   <h3>MPC outputs</h3>
-                  <p>High-level control metrics are shown first, then the trajectory chart and raw response are available below.</p>
+                  <p>The simulation returns efficiency and stability metrics, then plots the predicted target trajectory across the control run.</p>
                 </div>
               </div>
               <div class="mini-cards">
@@ -1756,7 +1756,7 @@
           <div class="section-heading">
             <div>
               <h2>Explainability</h2>
-              <p>The explainability view is designed to be readable for non-ML viewers: top contributing features are summarized in plain language first, while the heatmap and raw payload remain available for deeper inspection.</p>
+              <p>This section shows which input features and timesteps had the strongest influence on a selected greenhouse prediction target.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Trust-building view</span>
@@ -1769,7 +1769,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Run explanation</h3>
-                  <p>Choose a target variable and attribution method, then explain the current sample or dataset window.</p>
+                  <p>Select a target output and explainability method, then compute feature influence over the current input window.</p>
                 </div>
               </div>
 
@@ -1811,7 +1811,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Heatmap</h3>
-                  <p>Brighter cells indicate stronger influence on the selected target prediction across timesteps and input features.</p>
+                  <p>Brighter cells indicate stronger influence on the selected target forecast across timesteps and input features.</p>
                 </div>
               </div>
               <div class="chart-surface">
@@ -1826,7 +1826,7 @@
           <div class="section-heading">
             <div>
               <h2>Charts & Trends</h2>
-              <p>This tab gives context before prediction or explanation. It shows the raw greenhouse trajectory so users can see whether the recent window looks stable, unusual, or operationally interesting.</p>
+              <p>This section shows recent greenhouse and weather trajectories so the forecast and explainability outputs can be interpreted against the underlying sensor history.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Context before explanation</span>
@@ -1839,7 +1839,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Trend controls</h3>
-                  <p>Choose a dataset split and the features you want to compare. The defaults are selected to tell a coherent story across climate state, control signals, and weather context.</p>
+                  <p>Select a dataset window and compare recent climate, control, and weather features over time.</p>
                 </div>
               </div>
 
@@ -1876,7 +1876,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Trend chart</h3>
-                  <p>Values are normalized for comparison so the visual emphasizes pattern changes and timing instead of raw unit scale differences.</p>
+                  <p>Values are normalized for comparison so pattern changes and timing can be compared even when the original units differ.</p>
                 </div>
               </div>
               <div class="chart-surface">
@@ -1891,7 +1891,7 @@
           <div class="section-heading">
             <div>
               <h2>Scripts & Developer Tools</h2>
-              <p>Technical operations are intentionally separated from the presentation tabs. This keeps the product view clean while still giving developers a built-in script launcher and source preview.</p>
+              <p>This section exposes project scripts directly from the dashboard so training, benchmarking, and utility workflows can be inspected and run from the same interface.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Technical lane</span>
@@ -1904,7 +1904,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Run a project script</h3>
-                  <p>Select any Python file in the project, review its source, then execute it with optional arguments.</p>
+                  <p>Select a Python file from the project, inspect its source, and execute it with optional arguments.</p>
                 </div>
               </div>
               <div class="field">
@@ -1930,7 +1930,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Source preview</h3>
-                  <p>Preview keeps the tooling tab self-contained so developers can inspect what they are about to run without leaving the page.</p>
+                  <p>The selected script source is shown here before execution.</p>
                 </div>
               </div>
               <div class="terminal-box" id="scriptSource">Select a Python file to preview its source.</div>
@@ -1941,7 +1941,7 @@
             <div class="panel-header">
               <div>
                 <h3>Execution output</h3>
-                <p>Script output is captured below, including stderr and return code context.</p>
+                <p>Execution output, stderr, and return code details are shown here.</p>
               </div>
             </div>
             <div class="terminal-box" id="scriptOutput">No script has been run yet.</div>
@@ -1952,7 +1952,7 @@
           <div class="section-heading">
             <div>
               <h2>Settings & Environment</h2>
-              <p>Advanced environment details live here so the summary stays focused. This tab surfaces feature schema, pipeline defaults, and continuous update tools for technical users.</p>
+              <p>This section shows the deployed model configuration, feature schema, preprocessing defaults, and continuous update controls.</p>
             </div>
             <div class="section-badges">
               <span class="badge highlight">Configuration view</span>
@@ -1965,7 +1965,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Model environment</h3>
-                  <p>These values come from the live model metadata and show what the deployed system expects.</p>
+                  <p>These values come from the live deployed model metadata.</p>
                 </div>
               </div>
               <div class="feature-tags" id="environmentTags"></div>
@@ -1975,7 +1975,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Pipeline defaults</h3>
-                  <p>Useful when someone wants to understand how windows are prepared before inference.</p>
+                  <p>These defaults describe how model windows are prepared before inference.</p>
                 </div>
               </div>
               <div class="response-box" id="pipelineInfo">Loading pipeline defaults...</div>
@@ -1987,7 +1987,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Feature schema</h3>
-                  <p>Climate and weather inputs are split explicitly so the multi-input model structure is understandable from the interface.</p>
+                  <p>This schema shows how greenhouse climate features and outdoor weather features are organized for the model.</p>
                 </div>
               </div>
               <div class="feature-tags" id="featureSchema"></div>
@@ -1997,7 +1997,7 @@
               <div class="panel-header">
                 <div>
                   <h3>Continuous update</h3>
-                  <p>Use this when you want to ingest new rows and fine-tune the deployed model incrementally.</p>
+                  <p>Use this to ingest new greenhouse and weather rows and fine-tune the deployed model incrementally.</p>
                 </div>
               </div>
               <div class="input-grid">
