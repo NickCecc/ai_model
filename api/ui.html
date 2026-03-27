@@ -1247,10 +1247,6 @@
             <strong>Charts & Trends</strong>
             <span>Sensor patterns and historical context</span>
           </button>
-          <button class="tab-button" type="button" role="tab" data-tab="tools">
-            <strong>Developer Tools</strong>
-            <span>Script runner and source preview</span>
-          </button>
           <button class="tab-button" type="button" role="tab" data-tab="settings">
             <strong>Settings & Environment</strong>
             <span>Schema, pipeline setup, and update tools</span>
@@ -1887,67 +1883,6 @@
           </div>
         </section>
 
-        <section class="tab-panel" data-panel="tools">
-          <div class="section-heading">
-            <div>
-              <h2>Scripts & Developer Tools</h2>
-              <p>This section exposes project scripts directly from the dashboard so training, benchmarking, and utility workflows can be inspected and run from the same interface.</p>
-            </div>
-            <div class="section-badges">
-              <span class="badge highlight">Technical lane</span>
-              <span class="badge">Safe path browsing for Python files</span>
-            </div>
-          </div>
-
-          <div class="script-layout">
-            <section class="panel">
-              <div class="panel-header">
-                <div>
-                  <h3>Run a project script</h3>
-                  <p>Select a Python file from the project, inspect its source, and execute it with optional arguments.</p>
-                </div>
-              </div>
-              <div class="field">
-                <label for="scriptSelect">Python file</label>
-                <select id="scriptSelect"></select>
-              </div>
-              <div class="field">
-                <label for="scriptArgs">Arguments</label>
-                <input id="scriptArgs" type="text" placeholder="--help" />
-              </div>
-              <div class="field">
-                <label for="scriptTimeout">Timeout seconds</label>
-                <input id="scriptTimeout" type="number" min="1" max="120" value="25" />
-              </div>
-              <div class="action-row">
-                <button class="ghost-button" type="button" id="refreshScriptsBtn">Refresh files</button>
-                <button class="action-button" type="button" id="runScriptBtn">Run script</button>
-              </div>
-              <div class="status-line" id="scriptStatus">Idle</div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-header">
-                <div>
-                  <h3>Source preview</h3>
-                  <p>The selected script source is shown here before execution.</p>
-                </div>
-              </div>
-              <div class="terminal-box" id="scriptSource">Select a Python file to preview its source.</div>
-            </section>
-          </div>
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Execution output</h3>
-                <p>Execution output, stderr, and return code details are shown here.</p>
-              </div>
-            </div>
-            <div class="terminal-box" id="scriptOutput">No script has been run yet.</div>
-          </section>
-        </section>
-
         <section class="tab-panel" data-panel="settings">
           <div class="section-heading">
             <div>
@@ -2077,7 +2012,6 @@
       samplePayload: null,
       datasetWindow: null,
       currentWindowData: null,
-      files: [],
       lastPrediction: null,
       lastMpc: null,
       lastExplain: null,
@@ -2170,14 +2104,6 @@
       trendStats: document.getElementById("trendStats"),
       trendCanvas: document.getElementById("trendCanvas"),
       trendLegend: document.getElementById("trendLegend"),
-      scriptSelect: document.getElementById("scriptSelect"),
-      scriptArgs: document.getElementById("scriptArgs"),
-      scriptTimeout: document.getElementById("scriptTimeout"),
-      refreshScriptsBtn: document.getElementById("refreshScriptsBtn"),
-      runScriptBtn: document.getElementById("runScriptBtn"),
-      scriptStatus: document.getElementById("scriptStatus"),
-      scriptSource: document.getElementById("scriptSource"),
-      scriptOutput: document.getElementById("scriptOutput"),
       environmentTags: document.getElementById("environmentTags"),
       pipelineInfo: document.getElementById("pipelineInfo"),
       featureSchema: document.getElementById("featureSchema"),
@@ -2433,14 +2359,13 @@
     async function loadBootstrapData() {
       updateStatus(els.predictStatus, "Loading project metadata...");
       try {
-        const [modelInfo, comparison, pipelineConfig, explainConfig, mpcConfig, samplePayload, files] = await Promise.all([
+        const [modelInfo, comparison, pipelineConfig, explainConfig, mpcConfig, samplePayload] = await Promise.all([
           apiFetch("/model-info"),
           apiFetch("/model/comparison"),
           apiFetch("/pipeline/default-config"),
           apiFetch("/explain/default-config"),
           apiFetch("/mpc/default-config"),
           apiFetch("/sample"),
-          apiFetch("/files"),
         ]);
 
         state.modelInfo = modelInfo;
@@ -2449,13 +2374,10 @@
         state.explainConfig = explainConfig;
         state.mpcConfig = mpcConfig;
         state.samplePayload = samplePayload;
-        state.files = files.files || [];
-
         populatePredictControls();
         renderSummary();
         renderModelComparison();
         renderEnvironment();
-        renderFiles();
         loadDefaultTextareas();
         applyPayloadToAllTextareas(samplePayload.data || []);
         await loadDatasetWindow(els.datasetSplit.value, Number(els.datasetIndex.value), false);
@@ -2915,63 +2837,6 @@
       }
     }
 
-    function renderFiles() {
-      els.scriptSelect.innerHTML = "";
-      state.files.forEach((file) => {
-        const option = document.createElement("option");
-        option.value = file;
-        option.textContent = file;
-        els.scriptSelect.appendChild(option);
-      });
-      if (state.files.length) {
-        loadScriptSource(state.files[0]);
-      }
-    }
-
-    async function loadScriptSource(path) {
-      if (!path) {
-        return;
-      }
-      try {
-        const data = await apiFetch(`/file?path=${encodeURIComponent(path)}`);
-        els.scriptSource.textContent = data.content;
-      } catch (error) {
-        els.scriptSource.textContent = error.message;
-      }
-    }
-
-    async function refreshFiles() {
-      updateStatus(els.scriptStatus, "Refreshing script list...");
-      try {
-        const files = await apiFetch("/files");
-        state.files = files.files || [];
-        renderFiles();
-        updateStatus(els.scriptStatus, `Loaded ${state.files.length} Python files`);
-      } catch (error) {
-        updateStatus(els.scriptStatus, error.message, true);
-      }
-    }
-
-    async function runScript() {
-      updateStatus(els.scriptStatus, "Running script...");
-      try {
-        const body = {
-          path: els.scriptSelect.value,
-          args: els.scriptArgs.value.trim() ? els.scriptArgs.value.trim().split(/\s+/) : [],
-          timeout_seconds: Number(els.scriptTimeout.value),
-        };
-        const result = await apiFetch("/run-script", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        els.scriptOutput.textContent = JSON.stringify(result, null, 2);
-        updateStatus(els.scriptStatus, result.ok ? "Script completed" : `Script exited with code ${result.returncode}`);
-      } catch (error) {
-        updateStatus(els.scriptStatus, error.message, true);
-        els.scriptOutput.textContent = error.message;
-      }
-    }
-
     async function runContinuousUpdate() {
       updateStatus(els.updateStatus, "Running continuous update...");
       try {
@@ -3034,10 +2899,6 @@
 
       els.renderTrendsBtn.addEventListener("click", () => renderTrends(false));
       els.useCurrentWindowBtn.addEventListener("click", () => renderTrends(true));
-
-      els.refreshScriptsBtn.addEventListener("click", refreshFiles);
-      els.runScriptBtn.addEventListener("click", runScript);
-      els.scriptSelect.addEventListener("change", (event) => loadScriptSource(event.target.value));
 
       els.runUpdateBtn.addEventListener("click", runContinuousUpdate);
     }

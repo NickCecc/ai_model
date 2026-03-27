@@ -2,49 +2,45 @@
 
 A machine learning and control platform for greenhouse climate forecasting, model benchmarking, explainability, and model predictive control.
 
-This project combines deep learning with operational decision support. It predicts key greenhouse climate variables from recent greenhouse and weather history, compares multiple model architectures, explains model behavior, and simulates control strategies through MPC.
+This project predicts key greenhouse climate variables from recent greenhouse and weather history, compares multiple neural network architectures, explains model behavior, and simulates control strategies through MPC.
 
-## Overview
+## Project Scope
 
-The platform is built around a few core ideas:
+The repository combines:
+- greenhouse climate prediction
+- trained model comparison
+- explainability and attribution views
+- MPC control simulation
+- a browser dashboard for demonstrations and practical inspection
 
-- forecast future greenhouse conditions from recent sensor and weather data
-- compare multiple neural network architectures and deploy the best-performing model
-- explain predictions with feature importance and timestep heatmaps
-- simulate control strategies with model predictive control
-- provide a browser-based dashboard for demos, inspection, and technical use
+## Main Features
 
-## Main Capabilities
-
-- **Project Summary / Dashboard**
-  - high-level overview of the system, deployed model, and key outputs
+- **Summary Dashboard**
+  - overview of the project, deployed model, and key outputs
 
 - **Prediction**
-  - run next-step greenhouse climate predictions from model input windows
+  - run next-step greenhouse climate predictions from historical input windows
 
 - **Model Comparison**
-  - compare trained architectures using RMSE, MAE, and related metrics
+  - compare candidate architectures using RMSE, MAE, SMAPE, and R2
 
-- **MPC Control / Simulation**
+- **MPC Control**
   - simulate control trajectories and benchmark control scenarios
 
 - **Explainability**
-  - inspect feature importance and attribution heatmaps for predictions
+  - inspect feature importance and timestep heatmaps
 
-- **Charts / Trends**
+- **Charts and Trends**
   - visualize recent greenhouse and weather behavior over time
 
-- **Developer Tools**
-  - browse and run project Python scripts from the dashboard
-
-- **Environment / Metadata**
-  - inspect model metadata, schema details, and preprocessing defaults
+- **Settings and Environment**
+  - inspect model metadata, feature schema, and preprocessing defaults
 
 ## Tech Stack
 
 - **Backend:** FastAPI
 - **Frontend:** HTML, CSS, JavaScript
-- **ML / Data:** TensorFlow / Keras, NumPy, scikit-learn, joblib
+- **ML / Data:** TensorFlow, Keras, NumPy, scikit-learn, joblib
 - **Control:** custom MPC simulation pipeline
 
 ## Repository Structure
@@ -60,84 +56,105 @@ ai_model/
 │   ├── evaluate_mpc_scenarios.py
 │   ├── ml/
 │   └── requirements.txt
+├── docs/
 ├── greenhouse_code/
 │   ├── GreenhouseClimate.csv
 │   ├── Weather.csv
 │   └── ...
 └── web-system/
-# Greenhouse AI / ML Project
+```
 
-This project provides a FastAPI backend and browser dashboard for:
-- greenhouse climate prediction
-- model comparison
-- MPC simulation
-- explainability and heatmaps
-- trend visualization
-- developer tools and script execution
+## Supported Model Architectures
 
-## Run The Main App
+- `baseline_lstm`
+- `lstm_cnn`
+- `bi_lstm`
+- `multi_input_hybrid`
+- `temporal_conv`
 
-The main web dashboard is served directly by the FastAPI app. There is no separate frontend build step for the primary greenhouse UI.
+The platform evaluates these models on the same forecasting task and ranks them by performance metrics.
 
-### 1. Create and activate a virtual environment
+## Getting Started
+
+### 1. Clone the repository
+
 ```bash
-cd /Users/nickcecchin/Desktop/ai_model
+git clone <your-repo-url>
+cd ai_model
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
 python3 -m venv api/.venv
 source api/.venv/bin/activate
 ```
 
-### 2. Install dependencies
+### 3. Install dependencies
+
 ```bash
 pip install -r api/requirements.txt
 ```
 
-### 3. Start the API and dashboard
+### 4. Start the app
+
 ```bash
 uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### 4. Open the dashboard
-Open:
+### 5. Open the dashboard
+
+Visit:
 
 `http://127.0.0.1:8000`
 
-That serves the main UI from `api/ui.html`.
+## If No Trained Checkpoint Exists Yet
 
-## If No Model Checkpoint Exists Yet
+The app expects a trained model checkpoint in `api/checkpoint/`.
 
-The app expects a trained checkpoint in `api/checkpoint/`.
-
-If you do not have one yet, train the models first:
+If no checkpoint exists yet, train the models first:
 
 ```bash
 python api/train_hybrid_models.py --architecture all
 ```
 
-This generates model weights, scalers, metadata, and comparison outputs locally.
+## Core API Endpoints
 
-## Optional: Run The Older Static Web Folder
+- `POST /predict`
+- `GET /model-info`
+- `GET /model/comparison`
+- `GET /pipeline/default-config`
+- `POST /pipeline/prepare`
+- `GET /mpc/default-config`
+- `POST /mpc/simulate`
+- `POST /mpc/evaluate-scenarios`
+- `GET /explain/default-config`
+- `POST /explain`
+- `POST /continuous/update`
 
-There is also a `web-system/` folder, but it is not the main greenhouse dashboard.
+## Deliverables
 
-If you want to open it anyway:
+The repository deliverables now include a handover report for future students:
 
-```bash
-cd /Users/nickcecchin/Desktop/ai_model/web-system
-python3 -m http.server 8080
-```
+- [Greenhouse_Project_Handover_Report.md](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.md)
+- [Greenhouse_Project_Handover_Report.docx](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.docx)
+- [Greenhouse_Project_Handover_Report.pdf](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.pdf)
 
-Then open:
-
-`http://127.0.0.1:8080`
+These documents include:
+- software tools used in the project
+- description of the codebase and major modules
+- dataset descriptions
+- installation and operation instructions
+- guidance for future students continuing the work
 
 ## Training Artifacts And Git
 
-The repo-level `.gitignore` keeps generated files local by default, including:
+Generated training results are intended to stay local by default.
+
+The repo-level `.gitignore` excludes:
 - `api/checkpoint/`
 - `greenhouse_code/checkpoint/`
 - local virtual environments
 
-Important:
-
-If checkpoint files are already tracked in Git, `.gitignore` alone will not stop them from appearing in future commits. They must be untracked separately with `git rm --cached`.
+If generated files were previously tracked in Git, they need to be untracked before `.gitignore` fully prevents them from appearing in commits.
 

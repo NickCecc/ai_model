@@ -135,8 +135,8 @@ The main UI includes:
 - MPC Control
 - Explainability
 - Charts / Trends
-- Scripts / Developer Tools
 - Settings / Environment
+
 
 ## Git And Generated Files
 
@@ -146,4 +146,3 @@ Generated training outputs should stay local. The repo-level `.gitignore` is set
 - local virtual environments
 
 If generated files are already tracked in Git, they must be untracked separately before `.gitignore` will stop them from appearing in commits.
-
