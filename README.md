@@ -132,20 +132,7 @@ python api/train_hybrid_models.py --architecture all
 - `POST /explain`
 - `POST /continuous/update`
 
-## Deliverables
 
-The repository deliverables now include a handover report for future students:
-
-- [Greenhouse_Project_Handover_Report.md](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.md)
-- [Greenhouse_Project_Handover_Report.docx](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.docx)
-- [Greenhouse_Project_Handover_Report.pdf](/Users/nickcecchin/Desktop/ai_model/docs/Greenhouse_Project_Handover_Report.pdf)
-
-These documents include:
-- software tools used in the project
-- description of the codebase and major modules
-- dataset descriptions
-- installation and operation instructions
-- guidance for future students continuing the work
 
 ## Training Artifacts And Git
 
